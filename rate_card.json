@@ -1,0 +1,25 @@
+{
+  "currency": "USD",
+  "services": {
+    "ai_chatbot": {
+      "name": "AI Chatbot Development",
+      "price": 2500,
+      "typical_scope": "Custom AI chatbot with knowledge-base integration, basic analytics, deployment, and documentation."
+    },
+    "rag_system": {
+      "name": "RAG Knowledge Assistant",
+      "price": 3500,
+      "typical_scope": "Retrieval-augmented generation assistant using a vector database, document ingestion, retrieval, and deployment."
+    },
+    "ai_automation": {
+      "name": "AI Workflow Automation",
+      "price": 2000,
+      "typical_scope": "AI-powered workflow automation integrating business processes, APIs, notifications, and human approval steps."
+    },
+    "ai_agent": {
+      "name": "AI Agent Development",
+      "price": 4000,
+      "typical_scope": "Agentic workflow with tool calling, task execution, error handling, and deployment."
+    }
+  }
+}

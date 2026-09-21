@@ -1,0 +1,15 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+
+# Runtime files
+deal.json
+priced_deal.json
+state.json
+generated_proposal.txt
+demo_sales_transcript.txt
+nudge_drafts/
+
+# Temporary MCP argument files
+*_args.json

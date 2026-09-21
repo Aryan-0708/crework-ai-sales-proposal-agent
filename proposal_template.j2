@@ -1,0 +1,56 @@
+PROPOSAL
+
+{{ company_name }}
+
+Prepared for: {{ client_name }}
+Prepared by: {{ sender_name }}
+
+============================================================
+PROJECT OVERVIEW
+============================================================
+
+Based on our discussion, we propose the following solution:
+
+{{ project_summary }}
+
+============================================================
+SCOPE OF WORK
+============================================================
+
+{% for service in services %}
+{{ loop.index }}. {{ service.name }}
+
+{{ service.scope }}
+
+{% endfor %}
+
+============================================================
+DELIVERABLES
+============================================================
+
+{% for deliverable in deliverables %}
+- {{ deliverable }}
+{% endfor %}
+
+============================================================
+PROJECT INVESTMENT
+============================================================
+
+Estimated Project Fee: {{ currency }} {{ total_price }}
+
+============================================================
+TIMELINE
+============================================================
+
+Estimated Timeline: {{ timeline }}
+
+============================================================
+NEXT STEPS
+============================================================
+
+Upon approval, the agreement will be sent through DocuSign
+for electronic signature.
+
+Thank you,
+
+{{ sender_name }}

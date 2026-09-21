@@ -1,0 +1,29 @@
+Sales Call — NorthStar Home Services
+
+Sales Rep: Thanks for joining. From our earlier conversation, it sounds like your
+team wants to automate some of the customer support and internal knowledge workflows.
+
+Client: Yes. We have technician documents, service manuals, troubleshooting guides,
+and internal SOPs. Our support team currently searches through those manually.
+
+Sales Rep: So one part would be a knowledge assistant that can retrieve the right
+information from those documents.
+
+Client: Exactly. We want a RAG-based assistant for our support team.
+
+Sales Rep: You also mentioned wanting an AI agent that can actually execute some
+repetitive workflows rather than only answer questions.
+
+Client: Right. We want the agent to handle routine customer-facing workflows,
+collect information, trigger the appropriate internal process, and escalate
+anything it cannot handle.
+
+Sales Rep: For the first phase, we'd scope the RAG assistant, the AI agent workflow,
+deployment, and documentation.
+
+Client: That sounds right. We'd like the first version in about four to six weeks.
+
+Sales Rep: Great. Based on the current scope, we'll prepare the proposal and send it
+for approval.
+
+Client: Perfect. Please send that over to us.
