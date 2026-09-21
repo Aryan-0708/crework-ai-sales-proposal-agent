@@ -1,430 +1,480 @@
 # 🤖 Crework Sales Proposal Agent
 
-> **Sales call → structured deal → deterministic pricing → proposal → DocuSign → verified status → human-reviewed follow-up**
-
-A **code-first AI Sales Proposal Agent** built for the Crework Labs buildathon.
-
-It uses a **local Qwen 3 1.7B model through Ollama** for structured deal extraction, keeps commercial logic deterministic with a local rate card, and uses **DocuSign MCP** as the agreement action layer.
+<p align="center">
+  <strong>Sales Call → Local AI → Pricing → Proposal → DocuSign → Verification → Follow-up</strong>
+</p>
 
 <p align="center">
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white">
-  <img alt="Ollama" src="https://img.shields.io/badge/Ollama-Qwen%203%201.7B-black?style=for-the-badge">
-  <img alt="DocuSign" src="https://img.shields.io/badge/DocuSign-MCP-FFB000?style=for-the-badge&logo=docusign&logoColor=111111">
-  <img alt="LLM API cost" src="https://img.shields.io/badge/LLM%20API%20cost-$0-2EA043?style=for-the-badge">
+  A code-first AI workflow that turns an unstructured sales conversation into a priced proposal and a real DocuSign agreement — using a local Qwen model and no paid LLM API.
+</p>
+
+<p align="center">
+  <a href="./Crework_Sales_Proposal_Agent_Final_Submission.pdf">📄 <strong>Read the full submission</strong></a>
+  &nbsp;•&nbsp;
+  <a href="./Crework_Sales_Proposal_Agent_Workflow.gif">🎬 <strong>Watch the demo</strong></a>
+  &nbsp;•&nbsp;
+  <a href="#-quick-start">⚡ <strong>Run it</strong></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11">
+  <img src="https://img.shields.io/badge/Ollama-Qwen%203%201.7B-black?style=for-the-badge" alt="Ollama Qwen 3 1.7B">
+  <img src="https://img.shields.io/badge/DocuSign-MCP-FFB000?style=for-the-badge&logo=docusign&logoColor=111111" alt="DocuSign MCP">
+  <img src="https://img.shields.io/badge/LLM%20API%20Cost-$0-2EA043?style=for-the-badge" alt="Zero paid LLM API">
 </p>
 
 ---
 
-## 🎯 The problem
+## ✨ What this project does
 
-After a sales call, someone may still need to:
+This project automates the operational work between a sales conversation and a proposal being sent for signature.
 
-**read the transcript → identify requirements → choose services → calculate pricing → prepare the proposal → create the agreement → populate fields → send it → check signature status → follow up**
+```text
+┌────────────────────────┐
+│ Sales Call Transcript  │
+└───────────┬────────────┘
+            ↓
+┌────────────────────────┐
+│ Local Qwen via Ollama  │  ← AI understanding
+└───────────┬────────────┘
+            ↓
+┌────────────────────────┐
+│ Structured deal.json   │
+└───────────┬────────────┘
+            ↓
+┌────────────────────────┐
+│ Rate-card matching     │  ← deterministic business logic
+│ + price calculation    │
+└───────────┬────────────┘
+            ↓
+┌────────────────────────┐
+│ Proposal generation    │
+└───────────┬────────────┘
+            ↓
+┌────────────────────────┐
+│ DocuSign MCP           │  ← external action
+│ create → populate      │
+│ → validate → send      │
+└───────────┬────────────┘
+            ↓
+┌────────────────────────┐
+│ getEnvelope            │  ← verify actual status
+└───────────┬────────────┘
+            ↓
+┌────────────────────────┐
+│ Local state/idempotency│
+└───────────┬────────────┘
+            ↓
+┌────────────────────────┐
+│ Unsigned check         │
+│ → nudge draft          │
+│ → human review         │
+└────────────────────────┘
+```
 
-This project turns those steps into one repeatable workflow.
+> **Design principle:** The LLM understands the conversation. Python owns the business rules. DocuSign MCP performs the agreement action. A human approves follow-up communication.
 
 ---
 
-## ✨ What the agent does
+## 🎬 See it first
 
-| Stage | What happens | Implementation |
-|---|---|---|
-| 📝 Understand | Extract client, services, scope, deliverables, timeline | Local Qwen via Ollama |
-| 🧮 Price | Match services to fixed prices | Python + `rate_card.json` |
-| 📄 Prepare | Build proposal content | `proposal_template.j2` |
-| ✍️ Act | Create, populate and send agreement | DocuSign MCP |
-| ✅ Verify | Confirm actual envelope status | `getEnvelope` |
-| 🧠 Remember | Prevent duplicate sends | `state.json` |
-| 🔔 Follow up | Prepare a nudge when unsigned | `check_nudges.py` |
-| 👤 Approve | Human reviews the nudge before sending | Human-in-the-loop |
+<p align="center">
+  <img src="./Crework_Sales_Proposal_Agent_Workflow.gif" alt="End-to-end workflow demo" width="950">
+</p>
+
+**The demonstrated result:**
+
+| Output | Demonstrated value |
+|---|---:|
+| RAG Knowledge Assistant | $3,500 |
+| AI Agent Development | $4,000 |
+| **Total Proposal** | **$7,500** |
+| DocuSign status | **Sent** |
+| Follow-up | **Human-reviewed draft** |
+
+📄 **[Open the full submission with screenshots and step-by-step evidence →](./Crework_Sales_Proposal_Agent_Final_Submission.pdf)**
+
+---
+
+## 🧭 Navigate the project
+
+<details open>
+<summary><strong>🎯 1. Why I built this</strong></summary>
+
+### Business pain
+
+After a sales call, someone often has to manually extract requirements, choose services, calculate pricing, prepare a proposal, create an agreement, send it, check its status, and follow up.
+
+This project turns that sequence into one controlled workflow.
+
+### Why this pairing works
+
+**Local AI + deterministic code + DocuSign MCP** gives each component a clear responsibility:
+
+- **Local Qwen** handles messy natural language.
+- **Python** handles rules that should be predictable.
+- **DocuSign MCP** handles the real agreement action.
+- **Human review** stays in the communication loop.
+
+</details>
+
+<details>
+<summary><strong>🧠 2. What the AI actually does</strong></summary>
+
+The model is used for **information extraction**, not commercial decision-making.
+
+It extracts fields such as:
+
+```text
+client_name
+client_email
+services_discussed
+rough_scope
+deliverables
+timeline
+```
+
+The application then validates the required structure before moving to pricing.
+
+**Important:** prices come from `rate_card.json`, not from the model.
+
+</details>
+
+<details>
+<summary><strong>💰 3. How pricing works</strong></summary>
+
+The local rate card currently contains:
+
+```json
+{
+  "rag_system": 3500,
+  "ai_agent": 4000
+}
+```
+
+For the demonstrated deal:
+
+```text
+$3,500 + $4,000 = $7,500
+```
+
+This keeps commercial values deterministic and auditable.
+
+</details>
+
+<details>
+<summary><strong>✍️ 4. What happens inside DocuSign MCP</strong></summary>
+
+The send workflow is implemented in `send_proposal.py`:
+
+```text
+Idempotency check
+      ↓
+createEnvelope
+      ↓
+listRecipients
+      ↓
+Discover Client recipient
+      ↓
+Discover runtime text-tab IDs
+      ↓
+Populate fields
+      ↓
+Verify populated fields
+      ↓
+Record send_attempted
+      ↓
+Send envelope
+      ↓
+getEnvelope
+      ↓
+Confirm authoritative status
+```
+
+The demonstrated envelope was verified by `getEnvelope` as:
+
+```text
+status = sent
+```
+
+</details>
+
+<details>
+<summary><strong>🔁 5. How duplicate sends are prevented</strong></summary>
+
+The workflow keeps local state keyed by a deterministic `deal_id`.
+
+Before creating another envelope, `send_proposal.py` checks whether that deal already has a recorded send attempt.
+
+This matters because an MCP interaction is not a replacement for application-level workflow state.
+
+</details>
+
+<details>
+<summary><strong>⏰ 6. How follow-up works</strong></summary>
+
+`check_nudges.py` checks sent envelopes and prepares a follow-up draft when a proposal remains unsigned beyond the configured threshold.
+
+**Production threshold:** 48 hours.
+
+For the demo, a temporary environment-variable override was used to demonstrate the behavior without waiting 48 hours. The override is removed after the demo.
+
+The system writes a draft to:
+
+```text
+nudge_drafts/
+```
+
+It does **not** automatically send the email.
+
+</details>
 
 ---
 
 ## 🏗️ Architecture
 
-```mermaid
-flowchart LR
-    A[Sales Call Transcript] --> B[Local Qwen 3 1.7B<br/>Ollama]
-    B --> C[Structured Deal JSON]
-    C --> D[Service Matching]
-    D --> E[Deterministic Rate Card]
-    E --> F[Proposal Generation]
-    F --> G[DocuSign MCP]
-    G --> H[Create Envelope]
-    H --> I[Discover Recipient Tabs]
-    I --> J[Populate + Verify Fields]
-    J --> K[Send Envelope]
-    K --> L[getEnvelope<br/>Authoritative Status]
-    L --> M[Local State / Idempotency]
-    L --> N{Signed?}
-    N -->|Yes| O[Complete]
-    N -->|No, threshold reached| P[Generate Nudge Draft]
-    P --> Q[Human Review]
-```
-
-### 🖼️ Architecture at a glance
-
 <p align="center">
-  <img src="assets/architecture.png" alt="AI Sales Proposal Agent architecture" width="1000">
+  <img src="./architecture_actual.png" alt="Actual implementation architecture" width="1100">
 </p>
 
-### 🔑 Design principle
+### Map the architecture to the code
 
-> **The LLM understands. Python decides. DocuSign acts. Humans approve external follow-up.**
-
-The model is deliberately **not** responsible for pricing or sending decisions.
-
----
-
-## 🔄 End-to-end workflow
-
-```text
-Transcript
-   ↓
-Local Qwen extraction
-   ↓
-deal.json
-   ↓
-Service matching
-   ↓
-Deterministic pricing
-   ↓
-Proposal generation
-   ↓
-DocuSign MCP
-   ↓
-Recipient/tab discovery
-   ↓
-Field population + validation
-   ↓
-Send
-   ↓
-Authoritative status verification
-   ↓
-State tracking / duplicate-send guard
-   ↓
-Unsigned-proposal check
-   ↓
-Human-reviewed nudge draft
-```
+| Stage | File / component | Responsibility |
+|---|---|---|
+| Input | `sample_sales_transcript.txt` | Example sales call |
+| AI extraction | `extract_deal.py` + Ollama | Turn conversation into structured data |
+| Structured data | `deal.json` *(runtime)* | Store extracted deal |
+| Pricing | `match_services.py` + `rate_card.json` | Match services and calculate fee |
+| Proposal | `render_proposal.py` + `proposal_template.j2` | Render proposal content |
+| DocuSign action | `send_proposal.py` + MCP client | Create, populate, validate and send |
+| Verification | `getEnvelope` | Confirm actual envelope status |
+| Reliability | `state.json` *(runtime)* | Idempotency / workflow memory |
+| Follow-up | `check_nudges.py` | Detect unsigned proposals and draft a nudge |
 
 ---
 
-## 💡 Why these choices?
+## ⚡ Quick Start
 
-### 🧠 Local LLM
+### Prerequisites
 
-**Ollama + `qwen3:1.7b`** handles only the natural-language extraction step.
+- Python 3.11
+- Ollama
+- `qwen3:1.7b` available locally
+- DocuSign developer/demo account
+- A configured DocuSign MCP endpoint and OAuth token
 
-That keeps the build **code-first and locally runnable**, without relying on a paid LLM API.
-
-### 💰 Deterministic pricing
-
-The model identifies **what services were discussed**.
-
-Python decides **what those services cost** using `rate_card.json`.
-
-For the demonstrated deal:
-
-```text
-RAG Knowledge Assistant    $3,500
-AI Agent Development       $4,000
---------------------------------
-Total                      $7,500
-```
-
-No LLM-generated price is accepted.
-
-### 🔐 Idempotent sending
-
-A stable `deal_id` is generated from the client name + normalized transcript hash.
-
-Before a send, `state.json` is checked. A `send_attempted` marker is recorded **before the external send**, so an ambiguous failure does not silently trigger a second envelope.
-
-### 👤 Human-in-the-loop follow-up
-
-The system does **not** automatically email a customer.
-
-When an unsigned proposal reaches the configured threshold, it writes a local nudge draft for a human to review.
-
----
-
-## 🚀 Quick start
-
-### 1. Clone
-
-```bash
-git clone https://github.com/Aryan-0708/crework-ai-sales-proposal-agent.git
-cd crework-ai-sales-proposal-agent
-```
-
-### 2. Create the environment
+### 1. Install dependencies
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### 3. Install the local model
+### 2. Pull the local model
 
 ```powershell
 ollama pull qwen3:1.7b
 ```
 
-### 4. Configure DocuSign
+### 3. Configure secrets
 
-Create the required local `.env` values using `.env.example`.
+Copy `.env.example` to `.env` and fill in your local DocuSign configuration.
 
-Then authenticate:
+> 🔒 **Never commit `.env`.** It is intentionally excluded by `.gitignore`.
 
-```powershell
-python get_docusign_token.py
-```
-
-> **Important:** `.env`, runtime state, recipient data and temporary request files are intentionally excluded from Git.
-
----
-
-## ▶️ Run the pipeline
-
-### Step 1 — Extract deal information
+### 4. Run the pipeline
 
 ```powershell
 python extract_deal.py sample_sales_transcript.txt
+python match_services.py
+python render_proposal.py
+python send_proposal.py
+python check_nudges.py
 ```
 
-Creates a runtime `deal.json` with fields such as:
+---
 
-```json
-{
-  "deal_id": "...",
-  "client_name": "NorthStar Home Services",
-  "client_email": "",
-  "services_discussed": [],
-  "rough_scope": "...",
-  "deliverables": [],
-  "timeline": "..."
-}
+## 🧪 Demo checkpoints
+
+Run these commands to inspect each stage:
+
+<details>
+<summary><strong>Checkpoint A — extraction</strong></summary>
+
+```powershell
+python extract_deal.py sample_sales_transcript.txt
+Get-Content .\deal.json
 ```
 
-### Step 2 — Match services + price
+Expected: structured deal information containing the client, services, scope, deliverables and timeline.
+
+</details>
+
+<details>
+<summary><strong>Checkpoint B — pricing</strong></summary>
 
 ```powershell
 python match_services.py
+Get-Content .\priced_deal.json
 ```
 
-Creates runtime `priced_deal.json`.
+Expected: matched services and a deterministic total of **USD 7,500** for the demonstrated deal.
 
-### Step 3 — Render proposal
+</details>
+
+<details>
+<summary><strong>Checkpoint C — proposal</strong></summary>
 
 ```powershell
 python render_proposal.py
+Get-Content .\generated_proposal.txt
 ```
 
-Creates a local proposal preview.
+Expected: a populated proposal containing scope, deliverables, timeline and fee.
 
-### Step 4 — Create + populate + send DocuSign envelope
+</details>
+
+<details>
+<summary><strong>Checkpoint D — DocuSign</strong></summary>
 
 ```powershell
 python send_proposal.py
 ```
 
-The script:
+Look for:
 
-1. Checks idempotency state.
-2. Creates a draft envelope from the reusable DocuSign template.
-3. Discovers the `Client` recipient.
-4. Discovers that envelope's runtime tab IDs.
-5. Populates the six proposal fields.
-6. Verifies the populated values.
-7. Records `send_attempted`.
-8. Sends the envelope.
-9. Calls `getEnvelope` to verify the authoritative status.
+```text
+TAB VERIFICATION: PASSED
+AUTHORITATIVE STATUS (getEnvelope): sent
+```
 
-### Step 5 — Check unsigned proposals
+</details>
+
+<details>
+<summary><strong>Checkpoint E — nudge</strong></summary>
+
+For demo-only execution:
 
 ```powershell
+$env:DEMO_NUDGE_WINDOW_MINUTES="0"
 python check_nudges.py
+Remove-Item Env:DEMO_NUDGE_WINDOW_MINUTES
 ```
 
-Production behavior uses a **48-hour unsigned threshold**.
+Expected: a local follow-up draft is created under `nudge_drafts/`.
 
-For demos, the threshold can be temporarily overridden with `DEMO_NUDGE_WINDOW_MINUTES`; the override is removed afterwards.
+</details>
 
 ---
 
-## 🧪 Demo result
+## 📸 Evidence from the completed buildathon run
 
-The demonstrated run produced:
+The repository includes a full submission PDF with the actual screenshots from the working run.
 
-```text
-Client:        NorthStar Home Services
-Services:      RAG Knowledge Assistant + AI Agent Development
-Timeline:      4–6 weeks
-Total Fee:     USD 7,500
-DocuSign:      Envelope created + sent
-Verification:  getEnvelope → sent
-Follow-up:     Human-reviewed nudge draft
-```
+1. Sales transcript
+2. Local Qwen extraction
+3. Structured deal data
+4. Deterministic pricing
+5. Proposal generation
+6. DocuSign envelope creation
+7. Populated fields and validation
+8. Sent status verification
+9. Local state / idempotency
+10. Human-reviewed nudge draft
 
-### Demo envelope
-
-```text
-Envelope ID: fc8c2c9e-fcfb-8a40-8174-c846539313ef
-Status:      sent
-```
-
-> The envelope ID above is from the recorded demo run. For a fresh run, DocuSign generates a new ID.
+👉 **[View the complete evidence package](./Crework_Sales_Proposal_Agent_Final_Submission.pdf)**
 
 ---
 
-## 📸 Demo evidence
+## 🛡️ Reliability & safety choices
 
-The buildathon submission includes visual evidence for the full workflow:
-
-- Architecture diagram
-- Transcript input
-- Local Qwen extraction
-- Structured deal data
-- Deterministic pricing
-- Generated proposal
-- DocuSign envelope + recipient
-- Populated proposal fields
-- Signature/date fields
-- Sent status
-- State/idempotency evidence
-- Nudge draft
-- End-to-end workflow GIF
-
-See the final submission package for the complete walkthrough.
+| Risk | Design choice |
+|---|---|
+| LLM invents prices | Pricing is read from `rate_card.json` |
+| Wrong recipient fields | Recipient/tab IDs are discovered dynamically |
+| Sending bad values | Fields are verified before sending |
+| Duplicate proposal | Local `deal_id` + send-attempt state |
+| Assuming a send succeeded | `getEnvelope` verifies the authoritative status |
+| Unapproved follow-up | Nudge is a draft, never auto-sent |
+| Credential leakage | `.env` excluded from Git |
 
 ---
 
-## 📁 Project structure
+## 📁 Repository structure
 
 ```text
-crework-ai-sales-proposal-agent/
+.
+├── extract_deal.py
+├── match_services.py
+├── render_proposal.py
+├── send_proposal.py
+├── check_nudges.py
+├── docusign_mcp_client.py
+├── get_docusign_token.py
 │
-├── extract_deal.py           # Local LLM structured extraction
-├── match_services.py         # Deterministic service → price matching
-├── render_proposal.py        # Proposal rendering
-├── send_proposal.py          # DocuSign MCP orchestration
-├── check_nudges.py           # Unsigned proposal follow-up drafts
-│
-├── docusign_mcp_client.py    # Reusable MCP client wrapper
-├── get_docusign_token.py     # OAuth/token helper
-│
-├── rate_card.json            # Deterministic service pricing
-├── proposal_template.j2      # Proposal template
+├── rate_card.json
+├── proposal_template.j2
 ├── sample_sales_transcript.txt
-│
 ├── requirements.txt
 ├── .env.example
 ├── .gitignore
-└── README.md
+│
+├── architecture_actual.png
+├── Crework_Sales_Proposal_Agent_Workflow.gif
+└── Crework_Sales_Proposal_Agent_Final_Submission.pdf
 ```
 
-### Runtime-only files
-
-These are intentionally generated locally and excluded from the repository:
-
-```text
-deal.json
-priced_deal.json
-state.json
-generated_proposal.txt
-demo_sales_transcript.txt
-nudge_drafts/
-*_args.json
-.env
-```
+Runtime artifacts such as `deal.json`, `priced_deal.json`, `state.json`, generated drafts, OAuth state and secrets are intentionally not part of the public source set.
 
 ---
 
-## 🧩 DocuSign MCP implementation notes
+## 🚀 What I would improve next
 
-The workflow discovered a few practical MCP constraints during implementation:
+This is intentionally a small, code-first prototype. A production version could add:
 
-- The reusable DocuSign template was configured manually in the DocuSign console.
-- The implemented MCP path uses classic recipient Text tabs assigned to the `Client` role.
-- Recipient tab IDs are **per-envelope**, so they are rediscovered after each new envelope is created.
-- Some MCP parameters need string values such as `"true"` for `include_tabs`.
-- The application verifies the final envelope state with `getEnvelope` instead of relying only on the send call response.
-
-These constraints shaped the implementation rather than being hidden from the design.
-
----
-
-## 🛡️ Safety + reliability
-
-| Concern | Handling |
-|---|---|
-| Secrets | `.env` ignored; `.env.example` committed |
-| Pricing hallucination | LLM never determines price |
-| Missing email | Send is blocked rather than guessed |
-| Duplicate sends | `state.json` + `deal_id` + `send_attempted` |
-| Ambiguous send result | Verify with `getEnvelope` |
-| Automatic customer follow-up | Not implemented; draft only |
-| Runtime/demo data | Generated locally and excluded from Git |
+- persistent database-backed workflow state
+- stronger schema validation and rejection paths
+- richer proposal document generation (DOCX/PDF)
+- retry/backoff and dead-letter handling for external calls
+- configurable approval policies and audit logs
+- automated scheduled nudge execution with explicit human approval gates
 
 ---
 
-## ⚠️ Known limitations
+## 💡 Other capability → business pain pairings
 
-This is a buildathon prototype, not a production deployment.
+<details>
+<summary><strong>1. DocuSign MCP + client onboarding</strong></summary>
 
-- Local JSON is used for state instead of a production database.
-- The DocuSign template is configured manually once.
-- The recipient email must be supplied when it is absent from the transcript.
-- Nudge delivery is intentionally human-approved.
-- The local 1.7B model is optimized for the constrained extraction task rather than broad autonomous reasoning.
+Use agreement actions to reduce repetitive document setup during onboarding while keeping approval steps explicit.
 
----
+</details>
 
-## 🔭 Natural next steps
+<details>
+<summary><strong>2. Stateless MCP + internal workflow state</strong></summary>
 
-A production version could add:
+Keep durable state in the application while using MCP tools for external actions, reducing duplicate or repeated operations.
 
-- Persistent database-backed workflow state
-- CRM integration
-- Automatic transcript ingestion from a meeting platform
-- Stronger schema validation / confidence checks
-- Multiple currencies and pricing rules
-- Role-based approval workflows
-- Email/CRM follow-up integrations
-- Observability, retries and audit logging
+</details>
+
+<details>
+<summary><strong>3. Agreement status + follow-up workflow</strong></summary>
+
+Query agreement status and prepare follow-up drafts so sales teams do not have to manually check every outstanding proposal.
+
+</details>
 
 ---
 
-## 💭 Other capability → pain ideas explored
+## 🙌 Built for the Crework Labs buildathon
 
-### DocuSign MCP + client onboarding
-Create and manage onboarding agreements as part of a repeatable onboarding workflow.
+**Core stack:** Python · Ollama · Qwen 3 1.7B · DocuSign MCP · Jinja2 · JSON
 
-### Stateless MCP + internal tool lookup
-Use MCP for external actions while the application owns state, rate limits and duplicate-action protection.
+**Key idea:** use AI where language understanding is valuable, and deterministic software where business correctness matters.
 
-### Agreement status + automated follow-up
-Use agreement status to identify unsigned proposals and prepare follow-up actions for human review.
-
-### Meta Muse + WhatsApp DM response
-Explore how a new multimodal/social capability could support customer communication workflows.
-
----
-
-## 👤 Author
-
-**Aryan Jagtap**
-
-Built as a **Crework Labs buildathon project**.
-
-[GitHub Repository](https://github.com/Aryan-0708/crework-ai-sales-proposal-agent)
-
----
-
-## ⭐ If you're reviewing this project
-
-The core idea is intentionally simple:
-
-> **Use AI where language is messy. Use deterministic code where correctness matters. Use MCP where an external business action must happen. Keep a human in control of the final communication.**
+<p align="center">
+  <a href="./Crework_Sales_Proposal_Agent_Final_Submission.pdf">📄 Submission</a>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  <a href="./Crework_Sales_Proposal_Agent_Workflow.gif">🎬 Demo</a>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  <a href="#-quick-start">⚡ Run locally</a>
+</p>
